@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Juicebox.Server</RootNamespace>
+
+    <!-- The website in /client is built and copied into wwwroot by `dotnet publish`. Pass -p:SkipClientBuild=true to skip it. -->
+    <ClientRoot>$(MSBuildThisFileDirectory)..\..\client\</ClientRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Juicebox.Server.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Local database and keys created by `dotnet run`; never publish them. -->
+    <Content Remove="App_Data\**" />
+    <None Remove="App_Data\**" />
+  </ItemGroup>
+
+  <Target Name="PublishClient" AfterTargets="ComputeFilesToPublish" Condition="'$(SkipClientBuild)' != 'true'">
+    <Exec WorkingDirectory="$(ClientRoot)" Command="yarn install --frozen-lockfile" />
+    <Exec WorkingDirectory="$(ClientRoot)" Command="yarn build" />
+    <ItemGroup>
+      <ClientBuildFiles Include="$(ClientRoot)build\**" />
+      <ResolvedFileToPublish Include="@(ClientBuildFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>
